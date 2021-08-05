@@ -1,18 +1,18 @@
 
 const express = require('express')
-const app = express()
+const server = express()
 const bcrypt = require('bcrypt')
 
-app.use(express.json())
+server.use(express.json())
 
 const users = []
 
-app.get('/users', (req, res) => {
+server.get('/users', (req, res) => {
   res.json(users)
 })
 
 // unencrypted
-app.post('/users', async (req, res) => {
+server.post('/users', async (req, res) => {
     try {
       const user = { name: req.body.name, password: req.body.password }
       users.push(user)
@@ -34,7 +34,7 @@ app.post('/users', async (req, res) => {
 //   }
 // })
 
-app.post('/users/login', async (req, res) => {
+server.post('/users/login', async (req, res) => {
   const user = users.find(user => user.name === req.body.name)
   if (user == null) {
     return res.status(400).send('Cannot find user')
@@ -50,4 +50,4 @@ app.post('/users/login', async (req, res) => {
   }
 })
 
-app.listen(3000)
+server.listen(3000)
