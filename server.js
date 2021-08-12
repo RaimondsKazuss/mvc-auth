@@ -1,50 +1,41 @@
+require('dotenv').config()
+
 const express = require('express')
 const app = express()
-const bcrypt = require('bcrypt')
+// const bcrypt = require('bcrypt')
 
 app.use(express.json())
 
-const users = [];
+const jwt = require('jsonwebtoken')
 
-// get all users
-app.get('/users', (req, res) => {
-    res.json(users)
-})
-
-// create a new user
-app.post('/users', async (req, res) => {
-    try {
-        
-        // crypt.hash(string, saltRounds)
-        const hashedPassword = await bcrypt.hash(req.body.password, 10)
-        const user = {
-            name: req.body.name,
-            password: hashedPassword
-        }
-        users.push(user)
-        res.status(201).send()
-    } catch {
-        res.status(500).send()
+const posts = [
+    {
+        username: "Jim",
+        title: "Jim's post"
+    },
+    {
+        username: "Bob",
+        title: "Bob's post"
     }
-})
+]
 
+//get all posts
+app.get('/posts', authenticateToken, (req, res) => {
+    res.json(posts.filter(post => post.username === req.user.name))
+  })
 
-// login a user
-app.post('/users/login', async (req, res) => {
-    const user = users.find(user => user.name = req.body.name)
-    if (!user) {
-        return res.status(400).send('Sorry something went wrong!')
-    }
-    try {
-        if (await bcrypt.compare(req.body.password, user.password)) {
-            res.send('Success!')
-        } else {
-            res.send('Wrong password!')
-        }
-    } catch {
-        res.status(500).send()
-    }
-})
+  function authenticateToken(req, res, next) {
+    const  authHeader = req.headers['authorization']
+    const token = authHeader && authHeader.split(' ')[1]
+    if (!token) return res.sendStatus(401)
+
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+        if (err) return res.sendStatus(403)
+        req.user = user
+        //just some placeholder function (it's doing nothing here)
+        next()
+    })
+}
 
 const port = 3000;
 app.listen(port, () => {
